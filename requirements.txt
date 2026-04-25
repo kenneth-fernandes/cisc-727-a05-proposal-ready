@@ -1,0 +1,13 @@
+# Python environment for A05 reproduction
+# Tested on Kaggle Notebooks (GPU T4 x2) and Google Colab (T4)
+
+torch>=2.9.0
+torchvision>=0.20.0
+numpy>=1.26.0
+pandas>=2.2.0
+matplotlib>=3.8.0
+pyyaml>=6.0
+
+# Optional, for ARE-II Sprint 2 (memory-efficient attention on Turing/T4)
+# Install only on the variant runs that exercise xFormers
+# xformers>=0.0.28
