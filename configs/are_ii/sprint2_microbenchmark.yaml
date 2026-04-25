@@ -1,0 +1,48 @@
+# ARE-II Sprint 2 — Microbenchmark Sweep (load-bearing experiment)
+# Goal: characterize the sequence-length crossover between attention kernels
+#       that actually run on a Tesla T4. Single attention layer, controlled
+#       inputs, no model training. This is the headline result of ARE-II.
+
+run_id: sprint2_microbenchmark
+
+# Independent variables
+sequence_lengths:
+  - 64
+  - 128
+  - 256
+  - 512
+  - 1024
+  - 2048
+  - 4096
+  # 8192 added only if peak memory allows; verified during Sprint 1
+
+attention_kernels:
+  - "math"               # PyTorch SDPBackend.MATH
+  - "efficient"          # PyTorch SDPBackend.EFFICIENT_ATTENTION (memory-efficient)
+  - "xformers"           # xFormers memory_efficient_attention (FP16/BF16 only)
+
+precisions:
+  - "fp16"
+  - "fp32"               # xformers omitted in fp32 (not supported)
+
+# Held constant
+embed_dim: 384
+num_heads: 6
+batch_size: 16
+
+# Measurement protocol
+warmup_iters: 10
+measure_iters: 50
+repetitions: 3
+measure: ["time_per_call_ms", "peak_memory_mb"]
+report: ["median", "iqr"]
+
+deliverables:
+  - "Crossover plot: time/call vs sequence length, one line per kernel × precision"
+  - "Memory plot: peak memory vs sequence length"
+  - "Summary CSV with median, IQR, kernel signature (from Sprint 1 attribution)"
+
+hardware:
+  platform: "Kaggle Notebooks (free tier)"
+  gpu_type: "NVIDIA Tesla T4 (16 GB HBM2)"
+  num_gpus: 1

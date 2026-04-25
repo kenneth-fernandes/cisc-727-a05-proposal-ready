@@ -1,0 +1,43 @@
+# ARE-II Sprint 1 — Kernel Attribution
+# Goal: identify which CUDA kernel actually executes when SDPBackend.FLASH_ATTENTION
+#       is requested on a Tesla T4 (sm_75, Turing). Capture profiler traces and
+#       PyTorch warning logs for each backend selection.
+#
+# Platform: Kaggle Notebooks (1x T4 or 2x T4) — single-GPU configuration is
+#           sufficient for kernel-attribution work.
+
+run_id: sprint1_kernel_attribution
+
+attention_backends:
+  - "math"                # SDPBackend.MATH — confirmed available on T4
+  - "efficient"           # SDPBackend.EFFICIENT_ATTENTION — memory-efficient, T4-supported
+  - "flash"               # SDPBackend.FLASH_ATTENTION — expected to fall back on T4
+
+precisions:
+  - "fp32"
+  - "fp16"
+
+sequence_lengths:
+  - 65                    # A04 variant (smallest non-trivial seq from prior pilot)
+  - 128
+  - 256
+
+repetitions: 3
+
+profiling:
+  enabled: true
+  use_torch_profiler: true
+  capture_warnings: true
+  log_device_summary: true
+  output_dir: "results/sprint1/profiler_traces"
+
+deliverables:
+  - "List of CUDA kernel names launched per backend (rank-0 trace)"
+  - "PyTorch warnings emitted when FLASH_ATTENTION requested on T4"
+  - "Summary CSV: backend × precision × seq_len → kernel_signature"
+
+hardware:
+  platform: "Kaggle Notebooks (free tier)"
+  gpu_type: "NVIDIA Tesla T4 (16 GB HBM2)"
+  num_gpus: 1
+  interconnect: "n/a"

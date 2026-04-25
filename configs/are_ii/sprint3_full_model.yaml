@@ -1,0 +1,49 @@
+# ARE-II Sprint 3 — Full-Model Validation
+# Goal: confirm that the kernel crossover identified in Sprint 2 holds in an
+#       end-to-end training step (not just a microbenchmark). Extends the A03/A04
+#       ViT harness to longer sequences via image upscaling and smaller patches.
+
+run_id: sprint3_full_model
+
+# Configurations swept (each row is one full training run of NUM_STEPS)
+runs:
+  - {img_size: 32,  patch_size: 16, seq_len: 5,    attention: "math"}      # A03 baseline anchor
+  - {img_size: 32,  patch_size: 4,  seq_len: 65,   attention: "math"}      # A04 anchor
+  - {img_size: 64,  patch_size: 4,  seq_len: 257,  attention: "math"}
+  - {img_size: 64,  patch_size: 4,  seq_len: 257,  attention: "efficient"}
+  - {img_size: 128, patch_size: 4,  seq_len: 1025, attention: "math"}
+  - {img_size: 128, patch_size: 4,  seq_len: 1025, attention: "efficient"}
+  - {img_size: 224, patch_size: 4,  seq_len: 3137, attention: "math"}
+  - {img_size: 224, patch_size: 4,  seq_len: 3137, attention: "efficient"}
+
+# Held constant (matched to A03/A04 to allow direct comparison)
+embed_dim: 384
+num_heads: 6
+num_layers: 12
+batch_size_per_gpu: 64
+num_steps: 100
+warmup_steps: 10
+optimizer: "adamw"
+learning_rate: 1.0e-3
+seed: 42
+
+dataset:
+  name: "cifar-10"        # upscaled via transforms.Resize for img_size > 32
+  source: "/kaggle/input/cifar-10-python"
+
+precision: "fp32"         # baseline; FP16 added if Sprint 2 shows precision matters
+
+parallelization:
+  strategy: "ddp"
+  num_gpus: 2
+
+deliverables:
+  - "End-to-end median time/step per (seq_len, kernel) cell"
+  - "Crossover figure overlaying microbenchmark (Sprint 2) and full-model (this sprint)"
+  - "Reproduction script and checkpoint manifest"
+
+hardware:
+  platform: "Kaggle Notebooks (free tier)"
+  gpu_type: "NVIDIA Tesla T4 (16 GB HBM2)"
+  num_gpus: 2
+  interconnect: "PCIe"

@@ -1,0 +1,52 @@
+# Variant Configuration (A04 - Partition Granularity Change)
+# Run ID: R2-variant
+# Platform: Kaggle Notebooks (2x T4 GPU)
+#
+# Lever: Partition granularity (patch_size 16 -> 4)
+# Category: Parallelization lever — change partition granularity
+#
+# Rationale: A03 showed FlashAttention had zero speedup because patch_size=16
+# on CIFAR-10 (32x32) produces only 5 tokens. The 5x5 attention matrix fits
+# entirely in SRAM, giving FlashAttention no HBM traffic to optimize.
+# Reducing patch_size to 4 increases sequence length to 65 tokens (64 patches + 1 CLS),
+# creating a 65x65 attention matrix that should activate FlashAttention's tiling benefit.
+
+model:
+  name: "vit-small"
+  patch_size: 4               # CHANGED: 16 -> 4 (the one lever)
+  embed_dim: 384
+  num_heads: 6
+  num_layers: 12
+  sequence_length: 65         # derived: (32/4)^2 + 1
+
+dataset:
+  name: "cifar-10"
+  image_size: 32
+
+training:
+  batch_size: 64              # per GPU, held constant (same as baseline)
+  num_steps: 100
+  warmup_steps: 10            # excluded from timing
+  optimizer: "adam"
+  learning_rate: 1.0e-3
+  seed: 42
+
+attention:
+  backend: "math"             # standard PyTorch math-based attention
+  # Also tested with "flash" (FlashAttention via SDPA) for comparison
+
+parallelization:
+  strategy: "ddp"             # DistributedDataParallel (same as baseline)
+  num_gpus: 2
+
+precision: "float32"
+
+hardware:
+  platform: "Kaggle Notebooks"
+  gpu_type: "NVIDIA Tesla T4 (16 GB HBM2)"
+  num_gpus: 2
+  interconnect: "PCIe"
+
+# Change log (relative to baseline):
+# 1. patch_size: 16 -> 4 (sequence length: 5 -> 65 tokens)
+# No other settings changed. All other variables held constant.

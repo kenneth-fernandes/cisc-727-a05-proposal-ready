@@ -1,0 +1,61 @@
+# ARE-II Sprint 4 — A100 Cross-Architecture Spot-Check (STRETCH GOAL)
+# Goal: re-run the Sprint 2 microbenchmark on an Ampere-class GPU (A100) to
+#       compare the T4 crossover map against a GPU class where FlashAttention
+#       v1/v2 actually executes. Establishes that the T4 result is hardware-
+#       specific and not an artifact of the harness.
+#
+# Status: STRETCH only. Drop without remorse if Sprint 3 is not complete by
+#         the July 5 hard checkpoint. Not load-bearing for committee approval.
+#
+# Compute path (priority order):
+#   1. Harrisburg University internal HPC (if granted; cleanest IP path)
+#   2. AWS Cloud Credit for Research (if approved; requires May application)
+#   3. RunPod Secure Cloud A100 (~$1.29/hr, ~$30 for full sweep, IP-safe terms)
+#   4. Skip
+
+run_id: sprint4_a100_stretch
+
+# Sweep configuration — same axes as Sprint 2, plus real FlashAttention
+sequence_lengths:
+  - 64
+  - 128
+  - 256
+  - 512
+  - 1024
+  - 2048
+  - 4096
+  - 8192
+  - 16384            # extended range — A100 has 40 GB HBM, comfortably handles this
+
+attention_kernels:
+  - "math"
+  - "efficient"
+  - "flash_v1"       # PyTorch SDPBackend.FLASH_ATTENTION — supported on A100 (sm_80)
+  - "flash_v2"       # via flash-attn pip package; supported on Ampere+
+  - "xformers"
+
+precisions:
+  - "fp16"
+  - "bf16"           # available on A100, NOT on T4 — adds a useful comparison point
+
+embed_dim: 384
+num_heads: 6
+batch_size: 16
+
+warmup_iters: 10
+measure_iters: 50
+repetitions: 3
+
+deliverables:
+  - "Side-by-side crossover plots: T4 (Sprint 2) vs A100 (this sprint)"
+  - "Confirmation that real FlashAttention executes on A100 (kernel signatures)"
+  - "Cost ledger: $ spent on cloud A100 if used"
+
+hardware:
+  preferred:
+    platform: "Harrisburg University internal HPC"
+    gpu_type: "NVIDIA A100 (40 GB HBM2)"
+  fallback_paid:
+    platform: "RunPod Secure Cloud"
+    gpu_type: "NVIDIA A100 (40 GB or 80 GB HBM2)"
+    estimated_cost_usd: 30

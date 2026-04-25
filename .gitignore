@@ -1,1 +1,26 @@
+# Reference materials from prior assignments — kept locally, not part of A05 bundle
 knowledge/
+
+# Personal planning notes — not for submission
+notes/
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.bcf
+*.blg
+*.run.xml
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
