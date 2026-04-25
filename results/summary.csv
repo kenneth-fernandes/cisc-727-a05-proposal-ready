@@ -1,0 +1,5 @@
+Run ID,patch_size,Seq Len,Attention,Median Time/Step (s),Throughput (samples/s),Fwd Time (s),Bwd Time (s)
+R1-baseline-std,16,5,math,0.0601,2131.3,0.0189,0.0336
+R1-baseline-flash,16,5,flash,0.0598,2141.5,0.0188,0.0334
+R2-variant-std,4,65,math,0.2209,579.5,0.0653,0.1478
+R2-variant-flash,4,65,flash,0.2570,498.1,0.0775,0.1718
